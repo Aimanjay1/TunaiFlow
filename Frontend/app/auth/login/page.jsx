@@ -10,7 +10,7 @@ import { useUser } from "@/components/UserProvider";
 export default function Login() {
   const { open } = useToast();
   const router = useRouter();
-  const { login } = useUser();
+  const { login, loading } = useUser();
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -61,7 +61,7 @@ export default function Login() {
             <Input type="password" name="password" id="password" placeholder="Password" required className="mt-1 w-full" />
           </div>
           {/* <Link href="/" className="block w-full"> */}
-          <Button data-slot="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded shadow" type="submit">LOGIN</Button>
+          <Button data-slot="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded shadow" type="submit" disabled={loading}>{!loading ? "LOGIN" : "loading..."}</Button>
           {/* </Link> */}
         </form>
       </div>

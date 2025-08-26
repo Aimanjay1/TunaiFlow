@@ -2,16 +2,19 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/components/UserProvider";
+import tr from "zod/v4/locales/tr.cjs";
 
 
 export default function Signup() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
-
+    setLoading(true)
     const formData = new FormData(event.currentTarget);
     const fullName = formData.get("fullName");
     const email = formData.get("email");
@@ -20,6 +23,7 @@ export default function Signup() {
 
     if (password !== confirmPassword) {
       alert("Passwords do not match.");
+      setLoading(false)
       return;
     }
 
@@ -28,7 +32,7 @@ export default function Signup() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fullName, email, password }),
     });
-
+    setLoading(false)
     if (response.ok) {
       alert("Sign up successful.");
       router.push("/auth/login");
@@ -74,7 +78,7 @@ export default function Signup() {
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
             <Input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required className="mt-1 w-full" />
           </div>
-          <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded shadow">SIGN UP</Button>
+          <Button data-slot="button" className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded shadow" type="submit" disabled={loading}>{!loading ? "SIGNUP" : "loading..."}</Button>
         </form>
       </div>
     </div>

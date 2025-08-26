@@ -2,6 +2,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import LoadingScreen from "./loading-screen";
 
 const UserContext = createContext(null);
 
@@ -109,7 +110,7 @@ export function UserProvider({ children, initialUser = null, fallback = null }) 
     );
 
     // NEW: block children until first auth check completes (prevents UI flash)
-    if (!ready) return fallback ?? <div className="flex items-center justify-center p-8">Loading…</div>;
+    if (!ready) return fallback ?? <LoadingScreen />
 
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
@@ -123,7 +124,7 @@ export function useUser() {
 // Optional: convenience wrapper to guard trees
 export function RequireAuth({ children, fallback = null }) {
     const { ready, isAuthenticated, loading } = useUser();
-    if (!ready || loading) return fallback ?? <div className="p-8">Loading…</div>;
+    if (!ready || loading) return fallback ?? <LoadingScreen />
     if (!isAuthenticated) return null; // middleware will redirect anyway
     return children;
 }
