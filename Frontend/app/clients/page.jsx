@@ -62,14 +62,7 @@ export default async function Clients(props) {
                             {Clients.map((Client, i) => (
                                 <TableRow
                                     key={i}
-                                    className="
-                                      group relative
-                                      after:content-[''] after:absolute after:inset-0
-                                      after:rounded-2xl after:border after:border-neutral-300
-                                      after:bg-white after:shadow-sm
-                                      hover:after:border-identity hover:after:shadow-md
-                                      after:pointer-events-none 
-                                    "
+                                    className="group"
                                 >
                                     <TableCell className="relative text-center z-10 bg-identity-cream first:rounded-l-2xl">
                                         <div className="flex flex-col mx-auto max-w-[200px]">
@@ -84,7 +77,7 @@ export default async function Clients(props) {
                                         {Client.companyName}
                                     </TableCell>
                                     <TableCell className="relative text-center z-10 bg-identity-cream">
-                                        {Client.CompanyAddress}
+                                        {Client.address}
                                     </TableCell>
                                     <TableCell className="relative text-center z-10 bg-identity-cream last:rounded-r-2xl">
                                         {Client.email}

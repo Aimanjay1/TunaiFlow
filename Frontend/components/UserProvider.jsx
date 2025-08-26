@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import LoadingScreen from "./loading-screen";
+import { NextResponse } from "next/server";
 
 const UserContext = createContext(null);
 
@@ -124,8 +125,16 @@ export function useUser() {
 
 // Optional: convenience wrapper to guard trees
 export function RequireAuth({ children, fallback = null }) {
-    const { ready, isAuthenticated, loading } = useUser();
-    if (!ready || loading) return fallback ?? <LoadingScreen />
-    if (!isAuthenticated) return null; // middleware will redirect anyway
+    const { ready, isAuthenticated, loading, logout } = useUser();
+
+    useEffect(() => {
+        if (ready && !loading && !isAuthenticated) {
+            logout();
+        }
+    }, [isAuthenticated]);
+
+    if (!ready || loading) return fallback ?? <LoadingScreen />;
+    if (!isAuthenticated) return null;
+
     return children;
 }

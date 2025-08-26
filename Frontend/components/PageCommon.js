@@ -7,7 +7,7 @@ export function TH({ children, className = "" }) {
 }
 
 export function Cell({ children, className = "" }) {
-    return <TableCell className={"text-center " + className}>{children}</TableCell>;
+    return <TableCell className={"text-center   " + className}>{children}</TableCell>;
 }
 
 export function PageButton({ children, href, className = "", variant = "identity", ...props }) {

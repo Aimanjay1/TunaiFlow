@@ -6,10 +6,10 @@ export function middleware(request) {
     const token = request.cookies.get(COOKIE_NAME)?.value;
     const { pathname } = request.nextUrl;
 
-    if (pathname.startsWith("/_next") || pathname === "/favicon.ico") return NextResponse.next();
+    if (pathname.startsWith("/_next") || pathname === "/favicon.ico" || pathname === "/") return NextResponse.next();
 
     if (pathname.startsWith(AUTH_PREFIX)) {
-        return token ? NextResponse.redirect(new URL("/", request.url)) : NextResponse.next();
+        return token ? NextResponse.redirect(new URL("/dashboard", request.url)) : NextResponse.next();
     }
 
     if (!token) {

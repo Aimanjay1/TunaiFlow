@@ -96,7 +96,9 @@ export default async function Invoice(props) {
                                                 {/* </InvoiceButton> */}
                                             </Cell>
                                             <Cell>
-                                                <PageButton>send email</PageButton>
+                                                <div className="w-full flex justify-center">
+                                                    <PageButton>send email</PageButton>
+                                                </div>
                                             </Cell>
                                             <Cell>
                                                 {/* <Link

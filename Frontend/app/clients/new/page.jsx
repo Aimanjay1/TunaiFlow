@@ -91,6 +91,7 @@ export default function AddClient(props) {
             if (res.ok) {
                 console.log(await res.json());
                 open("Client created successfully!", 4000)
+                router.replace("/clients")
             } else {
                 console.error("❌❌❌ Failed to create client");
                 open("Failed to create client!", 4000)

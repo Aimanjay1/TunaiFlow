@@ -66,7 +66,7 @@ export function AppSidebar(request) {
 
                         <SidebarMenuItem>
                             <SidebarMenuButton>
-                                <Link href={"/"} onClick={handleSidebarToggle} className="flex w-full">Dashboard</Link>
+                                <Link href={"/dashboard"} onClick={handleSidebarToggle} className="flex w-full">Dashboard</Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
 
@@ -79,12 +79,6 @@ export function AppSidebar(request) {
                                 <Link href={"/invoices"} onClick={handleSidebarToggle} className="flex w-full">Invoices</Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-
-                        {/* <SidebarMenuItem>
-                            <SidebarMenuButton>
-                                <Link href={"/invoice-template"} onClick={handleSidebarToggle} className="flex w-full">Invoice Template</Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem> */}
 
                         <SidebarMenuItem>
                             <SidebarMenuButton>
