@@ -6,6 +6,8 @@
 @theme inline {
   --color-identity: var(--identity);
   --color-identity-dillute: var(--identity-dillute);
+  --color-identity-blue: var(--identity-blue);
+  --color-identity-cream: var(--identity-cream);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -80,6 +82,9 @@
   --sidebar-ring: oklch(0.708 0 0);
   --identity: #EC8828;
   --identity-dillute: #F6B475;
+  --identity-blue: #4D9BE0;
+  --identity-cream: #4D9BE0;
+  --identity-cream: #FFF9F3;
 }
 
 .dark {

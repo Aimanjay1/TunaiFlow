@@ -14,7 +14,10 @@ import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toasts";
+import { ArrowArcLeft } from "phosphor-react";
+import { useUser } from "@/components/UserProvider";
 
 
 
@@ -44,6 +47,8 @@ function ClientButton({ children }) {
 
 export default function AddClient(props) {
     const { open } = useToast();
+    const router = useRouter();
+    const { authedFetch } = useUser()
 
     const form = useForm({
         defaultValues: {
@@ -61,6 +66,11 @@ export default function AddClient(props) {
     })
 
     const [preview, setPreview] = useState(null)
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const watchName = form.watch("clientName") || ""
+    const watchEmail = form.watch("email") || ""
+    const errors = form.formState.errors
+    const disableSubmit = isSubmitting || !watchName.trim() || !watchEmail.trim() || Object.keys(errors).length > 0;
 
     useEffect(() => {
         return () => {
@@ -69,17 +79,16 @@ export default function AddClient(props) {
     }, [preview])
 
     async function onSubmit(values) {
-        console.log("values", values)
+        if (isSubmitting) return; // Prevent double submit
+        setIsSubmitting(true);
 
         try {
-            const res = await fetch(`/api/clients`, {
+            const res = await authedFetch(`/api/clients`, {
                 method: "POST",
                 body: JSON.stringify(values),
-                // headers: { Cookie: `session=${session}` }, // Add session if needed
             });
 
             if (res.ok) {
-                // handle success
                 console.log(await res.json());
                 open("Client created successfully!", 4000)
             } else {
@@ -88,69 +97,80 @@ export default function AddClient(props) {
             }
         } catch (e) {
             console.error("Failed to load Clients,", e);
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
     let Clients = [];
     return (
-        <main className="flex flex-col h-min-full w-full p-4 lg:p-0 ">
-            <div className="container mx-auto my-12">
-                <h1 className="text-5xl font-bold mb-8">Add New Client</h1>
-                <p>Generate Clients with just a click of a button</p>
-            </div>
+        <main className="flex flex-col h-min-full w-full ">
+            {/* Decorative header with overlapping avatar and primary save button */}
+            <section className="relative w-full">
+                <div className="h-40 w-full bg-identity-blue shadow-sm p-4 flex items-start">
+                    <div className="container mx-auto flex items-start justify-between">
+                        <Button variant="ghost" size="lg" onClick={() => router.back()} className="text-white hover:bg-white/100 z-10">
+                            <ArrowArcLeft />
+                        </Button>
+                        <h1 className="text-2xl text-white font-semibold text-center flex-1 -ml-12 z-0">Client Profile</h1>
+                    </div>
+                </div>
+                <div className="absolute left-1/2 -bottom-16 -translate-x-1/2 flex flex-col items-center gap-3">
+                    <div
+                        role="button"
+                        aria-label="Change avatar"
+                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                        className="group relative"
+                    >
+                        <Avatar className="h-28 w-28 ring-4 ring-background shadow-lg bg-accent transition hover:brightness-105">
+                            <AvatarImage src={preview || undefined} alt="Client avatar" />
+                            <AvatarFallback className="text-xl">CL</AvatarFallback>
+                        </Avatar>
+                        <div className="pointer-events-none absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-sm font-medium transition">
+                            Change
+                        </div>
+                        <input
+                            id="avatar-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
+                                if (preview) URL.revokeObjectURL(preview);
+                                if (file) setPreview(URL.createObjectURL(file));
+                            }}
+                        />
+                    </div>
+                    <div className="flex gap-2">
+                        <Button type="submit" form="add-client-form" disabled={disableSubmit} className="bg-identity-dillute hover:bg-identity shadow disabled:opacity-50 disabled:cursor-not-allowed">
+                            Save
+                        </Button>
+                    </div>
+                </div>
+            </section>
 
-            <div className="container mx-auto">
-                {/* arrow */}
-            </div>
-
-            {/* <Badge variant={"destructive"} className={"mx-auto"}>Failed to load Clients</Badge> */}
-            <div className="container mx-auto">
+            <div className="container max-w-2xl mx-auto mt-12">
                 <Form {...form} >
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-md">
-                        {/* <FormField
-                            control={form.control}
-                            name="profilePicture"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex gap-4">
-                                        <Avatar className={"bg-accent shadow-md h-20 w-20 "}>
-                                            <AvatarImage src={preview || undefined} alt="Profile preview" />
-                                            <AvatarFallback>PP</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col justify-center gap-2">
-                                            <FormLabel>
-                                                Profile Picture
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type={"file"}
-                                                    name={field.name}
-                                                    ref={field.ref}
-                                                    onChange={(e) => {
-                                                        const file = e.target.files?.[0] || null
-                                                        field.onChange(file)
-                                                        if (preview) URL.revokeObjectURL(preview)
-                                                        setPreview(file ? URL.createObjectURL(file) : null)
-                                                    }}
-                                                    accept="image/*"
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </div>
-                                    </div>
-                                </FormItem>
-                            )}
-                        /> */}
+                    <form id="add-client-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-full p-4">
                         <FormField
                             control={form.control}
                             name="clientName"
+                            rules={{
+                                required: "Client name is required",
+                                minLength: { value: 2, message: "At least 2 characters" },
+                            }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Username</FormLabel>
+                                    <FormLabel>Username *</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Client's name" {...field} value={field.value ?? ""} />
+                                        <Input
+                                            placeholder="Client's name"
+                                            {...field}
+                                            value={field.value ?? ""}
+                                            aria-invalid={!!errors.clientName}
+                                            className={errors.clientName ? "border-red-500 focus-visible:ring-red-500" : ""}
+                                        />
                                     </FormControl>
-                                    {/* <FormDescription>The client's name.</FormDescription> */}
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -199,18 +219,31 @@ export default function AddClient(props) {
                         <FormField
                             control={form.control}
                             name="email"
+                            rules={{
+                                required: "Email is required",
+                                pattern: {
+                                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                    message: "Invalid email format",
+                                },
+                            }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email</FormLabel>
+                                    <FormLabel>Email *</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Email" {...field} value={field.value ?? ""} />
+                                        <Input
+                                            placeholder="Email"
+                                            {...field}
+                                            value={field.value ?? ""}
+                                            aria-invalid={!!errors.email}
+                                            className={errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
+                                        />
                                     </FormControl>
-                                    {/* <FormDescription>The client's name.</FormDescription> */}
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit">Save</Button>
+                        {/* Secondary save for when user scrolls beyond header */}
+                        {/* <Button variant="outline" type="submit" disabled={disableSubmit} className="disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</Button> */}
                     </form>
                 </Form>
             </div>

@@ -22,20 +22,22 @@ export default function Header(props) {
             <div className=" pr-4 flex items-center gap-2" >
                 {user && user.email && user.name ? (
                     <>
-                        <Avatar className={"bg-accent border-2 h-6 w-6 lg:h-8 lg:w-8 justify-center"} src={null}>{user ? (user.name.charAt(0) + user.name.charAt(1) || "-") : "-"}</Avatar>
-                        {/* <div className="text-sm flex flex-col justify-center">
+                        <Link href="/profile" className="pr-4 flex items-center gap-2 hover:cursor-pointer">
+                            <Avatar className={"bg-accent border-2 h-6 w-6 lg:h-8 lg:w-8 justify-center"} src={null}>{user ? (user.name.charAt(0) + user.name.charAt(1) || "-") : "-"}</Avatar>
+                            {/* <div className="text-sm flex flex-col justify-center">
                             <p className="font-bold ">{user ? (user.name || "-") : "-"}</p>
                             <p className="text-ellipsis">{user ? (user.email || "-") : "-"}</p>
-                        </div> */}
+                            </div> */}
+                        </Link>
                     </>
                 ) : (
                     <>
                         <Link href="/profile" className="pr-4 flex items-center gap-2 hover:cursor-pointer">
                             <Avatar className={"bg-accent border-2 h-6 w-6 lg:h-8 lg:w-8"} src={null}>Unauthorized</Avatar>
-                                <div className="text-sm flex flex-col justify-center">
-                                    <p className="font-bold ">Unauthorized</p>
-                                    <p className="text-ellipsis">Unauthorized</p>
-                                </div>
+                            <div className="text-sm flex flex-col justify-center">
+                                <p className="font-bold ">Unauthorized</p>
+                                <p className="text-ellipsis">Unauthorized</p>
+                            </div>
                         </Link>
                     </>
                 )

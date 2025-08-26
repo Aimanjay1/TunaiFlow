@@ -87,7 +87,8 @@ export function UserProvider({ children, initialUser = null, fallback = null }) 
             if (res.status === 401) {
                 // Session expired while browsing — cleanly log out and redirect
                 await logout();
-                throw new Error("Unauthorized");
+                // throw new Error("Unauthorized");
+                open("Unauthorized", 3000, "#f00")
             }
             return res;
         },
