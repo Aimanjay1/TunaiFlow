@@ -18,17 +18,35 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-// ===== Log DB host:port briefly (no secrets) =====
-var raw = builder.Configuration.GetConnectionString("DefaultConnection") ?? "<null>";
+// ===== Resolve connection strings (separate for migrate vs runtime) =====
+var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
+var migrateConn = Environment.GetEnvironmentVariable("DB_CONN_MIGRATE")
+               ?? builder.Configuration.GetConnectionString("MigrateConnection")
+               ?? defaultConn;
+var appConn     = Environment.GetEnvironmentVariable("DB_CONN_APP")
+               ?? builder.Configuration.GetConnectionString("AppConnection")
+               ?? defaultConn;
+
+if (string.IsNullOrWhiteSpace(migrateConn))
+    throw new InvalidOperationException("No DB connection string found for migrations (DB_CONN_MIGRATE / ConnectionStrings:MigrateConnection / DefaultConnection).");
+
+if (string.IsNullOrWhiteSpace(appConn))
+    throw new InvalidOperationException("No DB connection string found for runtime (DB_CONN_APP / ConnectionStrings:AppConnection / DefaultConnection).");
+
+// ===== Log both (no secrets) =====
 try
 {
-    var csb = new Npgsql.NpgsqlConnectionStringBuilder(raw);
-    Console.WriteLine($"[DB] Host={csb.Host}; Port={csb.Port}; Database={csb.Database}");
+    var m = new Npgsql.NpgsqlConnectionStringBuilder(migrateConn);
+    Console.WriteLine($"[DB:MIGRATE] Host={m.Host}; Port={m.Port}; Database={m.Database}");
 }
-catch
+catch { Console.WriteLine("[DB:MIGRATE] (couldn't parse connection string)"); }
+
+try
 {
-    Console.WriteLine($"[DB] Raw connection string (couldn't parse): {raw}");
+    var a = new Npgsql.NpgsqlConnectionStringBuilder(appConn);
+    Console.WriteLine($"[DB:RUNTIME] Host={a.Host}; Port={a.Port}; Database={a.Database}");
 }
+catch { Console.WriteLine("[DB:RUNTIME] (couldn't parse connection string)"); }
 
 // Global Npgsql behavior
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
@@ -61,12 +79,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ===== DbContext =====
-// (PgBouncer-friendly options are fine; keep your string in env)
+// ===== DbContext (runtime uses appConn) =====
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        appConn,
         npg =>
         {
             npg.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(2), errorCodesToAdd: null);
@@ -198,13 +215,16 @@ app.MapControllers();
 // Healthcheck for Render
 app.MapGet("/healthz", () => Results.Ok("ok"));
 
-// Apply EF migrations at startup (safe logging, won’t crash silent)
+// ===== Apply EF migrations at startup using MIGRATION connection =====
 try
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // point this specific context instance at the migration string
+    db.Database.SetConnectionString(migrateConn);
+
     app.Logger.LogInformation("DB: trying to connect & migrate…");
-    await db.Database.CanConnectAsync();
     await db.Database.MigrateAsync();
     app.Logger.LogInformation("DB: migrations OK");
 }
