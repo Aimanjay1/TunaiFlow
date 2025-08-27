@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;   // ✅ for proxy headers
 using Supabase;
 using QuestPDF.Infrastructure;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,15 +37,17 @@ if (string.IsNullOrWhiteSpace(appConn))
 // ===== Log both (no secrets) =====
 try
 {
-    var m = new Npgsql.NpgsqlConnectionStringBuilder(migrateConn);
-    Console.WriteLine($"[DB:MIGRATE] Host={m.Host}; Port={m.Port}; Database={m.Database}");
+    var m = new NpgsqlConnectionStringBuilder(migrateConn);
+    Console.WriteLine($"[DB:MIGRATE] Host={m.Host}; Port={m.Port}; Database={m.Database}; Username={m.Username}");
 }
 catch { Console.WriteLine("[DB:MIGRATE] (couldn't parse connection string)"); }
 
 try
 {
-    var a = new Npgsql.NpgsqlConnectionStringBuilder(appConn);
-    Console.WriteLine($"[DB:RUNTIME] Host={a.Host}; Port={a.Port}; Database={a.Database}");
+    var a = new NpgsqlConnectionStringBuilder(appConn);
+    Console.WriteLine($"[DB:RUNTIME] Host={a.Host}; Port={a.Port}; Database={a.Database}; Username={a.Username}");
+    if (a.Port == 6543) // transaction pooler
+        Console.WriteLine("[DB:RUNTIME] Using transaction pooler (6543). Consider 'Max Auto Prepare=0' in the connection string.");
 }
 catch { Console.WriteLine("[DB:RUNTIME] (couldn't parse connection string)"); }
 
@@ -215,24 +218,69 @@ app.MapControllers();
 // Healthcheck for Render
 app.MapGet("/healthz", () => Results.Ok("ok"));
 
-// ===== Apply EF migrations at startup using MIGRATION connection =====
-try
+// Debug endpoint to verify which strings are in use (sanitized)
+app.MapGet("/_debug/db", () =>
 {
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    object Safe(string cs)
+    {
+        try
+        {
+            var b = new NpgsqlConnectionStringBuilder(cs);
+            // hide secret
+            b.Password = "***";
+            return new { b.Host, b.Port, b.Database, b.Username };
+        }
+        catch { return new { value = "(unparsable)" }; }
+    }
+    return Results.Ok(new
+    {
+        migrate = Safe(migrateConn),
+        runtime = Safe(appConn)
+    });
+});
 
-    // point this specific context instance at the migration string
-    db.Database.SetConnectionString(migrateConn);
+// ===== Apply EF migrations at startup using MIGRATION connection, with fallback to RUNTIME =====
+var skipMigrations = (Environment.GetEnvironmentVariable("SKIP_MIGRATIONS") ?? "false")
+                     .Equals("true", StringComparison.OrdinalIgnoreCase);
 
-    app.Logger.LogInformation("DB: trying to connect & migrate…");
-    await db.Database.MigrateAsync();
-    app.Logger.LogInformation("DB: migrations OK");
+if (!skipMigrations)
+{
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // 1) Try preferred: MIGRATE (typically session pooler 5432)
+        db.Database.SetConnectionString(migrateConn);
+        app.Logger.LogInformation("DB: trying to connect & migrate via MIGRATE connection…");
+        await db.Database.MigrateAsync();
+        app.Logger.LogInformation("DB: migrations OK via MIGRATE connection");
+    }
+    catch (Exception ex1)
+    {
+        app.Logger.LogWarning(ex1, "DB: migrate via MIGRATE connection failed. Falling back to RUNTIME connection once…");
+        try
+        {
+            using var scope2 = app.Services.CreateScope();
+            var db2 = scope2.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            // 2) Fallback: RUNTIME (transaction pooler 6543)
+            db2.Database.SetConnectionString(appConn);
+            app.Logger.LogInformation("DB: trying to migrate via RUNTIME connection…");
+            await db2.Database.MigrateAsync();
+            app.Logger.LogInformation("DB: migrations OK via RUNTIME connection");
+        }
+        catch (Exception ex2)
+        {
+            app.Logger.LogError(ex2, "DB: migration failed via both MIGRATE and RUNTIME connections.");
+            // Optional: rethrow to fail hard
+            // throw;
+        }
+    }
 }
-catch (Exception ex)
+else
 {
-    app.Logger.LogError(ex, "DB: connection/migration failed at startup");
-    // Optional: rethrow if you want hard-fail on DB issues:
-    // throw;
+    app.Logger.LogWarning("DB: SKIP_MIGRATIONS=true → startup migrations skipped.");
 }
 
 app.Run();
