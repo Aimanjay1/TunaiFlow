@@ -27,7 +27,7 @@ export function PageButton({ children, href, className = "", variant = "identity
 
 export function PageLayout({ title, subtitle, children, action }) {
     return (
-        <main className="flex flex-col h-min-full container mx-auto p-4">
+        <main className="flex flex-col h-min-full container mx-auto p-4 gap-4">
             <div className="container mx-auto my-12">
                 <h1 className="text-5xl font-bold mb-8">{title}</h1>
                 {subtitle && <p>{subtitle}</p>}

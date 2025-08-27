@@ -13,7 +13,7 @@ export async function GET(request) {
             Authorization: `Bearer ${token}`,
         },
     });
-    console.log(res)
+    // console.log(res)
 
     // If Flask always returns JSON, use:
     const data = await res.json().catch(() => null);
@@ -41,7 +41,7 @@ export async function POST(request) {
         method: "POST",
         body: jsonbody,
     });
-    console.log(jsonbody)
+    // console.log(jsonbody)
 
     // If Flask always returns JSON, use:
     const data = await res.json().catch(() => null);

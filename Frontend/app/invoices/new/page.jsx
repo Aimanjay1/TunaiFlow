@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useUser } from "@/components/UserProvider";
 import { ClientSelectCombobox } from "@/components/ClientSelectCombobox";
 import { toUtcIsoWithCurrentTime } from "@/utils/date";
+import { useRouter } from "next/navigation";
 
 function Cell({ children, className = "", ...rest }) {
     return (
@@ -27,6 +28,7 @@ function Cell({ children, className = "", ...rest }) {
 
 export default function AddInvoice() {
     const { open } = useToast();
+    const router = useRouter()
     const form = useForm({
         defaultValues: {
             clientId: "",
@@ -100,6 +102,7 @@ export default function AddInvoice() {
                 open(data.error || "Failed to create invoice", 4000);
             } else {
                 open("Invoice created!", 3000);
+                router.replace("/invoices")
                 // Optionally reset form/items here
             }
         } catch (err) {

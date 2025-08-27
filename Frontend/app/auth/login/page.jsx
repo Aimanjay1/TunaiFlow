@@ -17,13 +17,8 @@ export default function Login() {
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email");
     const password = formData.get("password");
-    // const response = await fetch("/api/auth/login", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ email, password }),
-    // });
-    const bruh = await login(email, password)
-    if (bruh) {
+
+    if (await login(email, password)) {
       open("Login successful.", 3000);
       router.replace("/");
     } else {

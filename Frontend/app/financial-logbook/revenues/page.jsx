@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroupDemo } from "@/components/RadioGroupDemo";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { string } from "zod";
 
 
 function RevenueButton({ children, className, variant }) {
@@ -49,18 +50,27 @@ export default async function Revenues(props) {
         Revenues = [];
         error = "Failed to load Revenues"
     }
+    let totalRev = 0
+    let revGoal = 1000
+    Revenues.map((v, i) => { totalRev += v.amount })
     return (
-        <PageLayout title="Revenues" subtitle="Generate Revenues with just a click of a button">
-            <PageButton href="revenues/new">Add New Revenue</PageButton>
+        <PageLayout title="Revenues">
             <div className="container mx-auto">
                 {
                     !error ?
                         (<>
-                            <RadioGroupDemo />
+                            <div className="max-w-2xl mx-auto">
+                                <RadioGroupDemo />
+                            </div>
                             {
                                 Revenues.length > 0 || <div className="container mx-auto">No revenue has been made</div>
                             }
-                            <Table className={"max-w-2xl  border-2 border-identity-dillute/20 rounded-xl "}>
+                            <Table className={"max-w-2xl mx-auto border-2 border-identity-dillute/20 rounded-xl "}>
+                                <colgroup>
+                                    {/* <col className="w-32" />
+                                    <col className="w-32" />
+                                    <col className="w-32" /> */}
+                                </colgroup>
                                 <TableHeader >
                                     <TableRow className={"bg-accent rounded-xl"}>
                                         <TH>Invoice ID</TH>
@@ -76,11 +86,12 @@ export default async function Revenues(props) {
                                                     {Revenue.invoiceId}
                                                 </Cell>
                                                 <Cell>
-                                                    <Link href={`/invoices/${Revenue.invoiceId}`}>
+                                                    <Link href={`/invoices/${Revenue.invoiceId}`} className="underline">
+                                                        Invoice {Revenue.invoiceId}
                                                     </Link>
                                                 </Cell>
                                                 <Cell>
-                                                    {Revenue.total}
+                                                    {Revenue.amount}
                                                 </Cell>
                                             </TableRow>
                                         ))
@@ -89,19 +100,19 @@ export default async function Revenues(props) {
 
                                 </TableBody>
                             </Table>
-                            <Table className={"w-full mx-auto my-12 gap-2 flex flex-col"}>
+                            <Table className={"max-w-2xl mx-auto my-12 gap-2 flex flex-col mb-40"}>
                                 <TableBody >
                                     <TableRow  >
                                         <TableCell>Total Revenue</TableCell>
-                                        <TableCell>RM 1000</TableCell>
+                                        <TableCell>RM {totalRev}</TableCell>
                                     </TableRow>
                                     <TableRow >
                                         <TableCell>Revenue Goal (August)</TableCell>
-                                        <TableCell>RM 1000</TableCell>
+                                        <TableCell>RM {revGoal}</TableCell>
                                     </TableRow>
                                     <TableRow >
                                         <TableCell>Status</TableCell>
-                                        <TableCell>100%  reached</TableCell>
+                                        <TableCell>{`${(totalRev / revGoal * 100).toFixed(2)}`}%  reached</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>

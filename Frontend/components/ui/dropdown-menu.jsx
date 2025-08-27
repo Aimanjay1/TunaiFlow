@@ -18,30 +18,45 @@ function DropdownMenuPortal({
   return (<DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />);
 }
 
-function DropdownMenuTrigger({
-  ...props
-}) {
-  return (<DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />);
-}
+// Trigger: prefer passing asChild so consumer can supply their own button component
+const DropdownMenuTrigger = React.forwardRef(function DropdownMenuTrigger({ asChild = true, ...props }, ref) {
+  return (
+    <DropdownMenuPrimitive.Trigger
+      ref={ref}
+      asChild={asChild}
+      data-slot="dropdown-menu-trigger"
+      {...props}
+    />
+  );
+});
 
-function DropdownMenuContent({
+const DropdownMenuContent = React.forwardRef(function DropdownMenuContent({
   className,
   sideOffset = 4,
+  hideWhenDetached = false,
   ...props
-}) {
+}, ref) {
   return (
-    (<DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
+        ref={ref}
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
+        // prevent focus jump back to trigger if consumer manages focus
+        onCloseAutoFocus={(e) => props.preventAutoFocus ? e.preventDefault() : undefined}
         className={cn(
-          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md",
+          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 max-h-[var(--radix-dropdown-menu-content-available-height)] min-w-[8rem] origin-[var(--radix-dropdown-menu-content-transform-origin)] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md focus:outline-none",
+          hideWhenDetached && "data-[state=closed]:pointer-events-none",
           className
         )}
-        {...props} />
-    </DropdownMenuPrimitive.Portal>)
+        {...props}
+      >
+        {props.children}
+        <DropdownMenuPrimitive.Arrow className="fill-border" />
+      </DropdownMenuPrimitive.Content>
+    </DropdownMenuPrimitive.Portal>
   );
-}
+});
 
 function DropdownMenuGroup({
   ...props
@@ -189,20 +204,27 @@ function DropdownMenuSubTrigger({
   );
 }
 
-function DropdownMenuSubContent({
+const DropdownMenuSubContent = React.forwardRef(function DropdownMenuSubContent({
   className,
+  sideOffset = 4,
   ...props
-}) {
+}, ref) {
   return (
-    (<DropdownMenuPrimitive.SubContent
+    <DropdownMenuPrimitive.SubContent
+      ref={ref}
+      sideOffset={sideOffset}
       data-slot="dropdown-menu-sub-content"
       className={cn(
-        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) overflow-hidden rounded-md border p-1 shadow-lg",
+        "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-[var(--radix-dropdown-menu-content-transform-origin)] overflow-hidden rounded-md border p-1 shadow-lg",
         className
       )}
-      {...props} />)
+      {...props}
+    >
+      {props.children}
+      <DropdownMenuPrimitive.Arrow className="fill-border" />
+    </DropdownMenuPrimitive.SubContent>
   );
-}
+});
 
 export {
   DropdownMenu,
