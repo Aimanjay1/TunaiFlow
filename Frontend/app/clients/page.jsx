@@ -1,3 +1,5 @@
+"use client"
+import { useEffect, useState } from "react";
 import { PageLayout, PageButton, TH, Cell } from "@/components/PageCommon";
 import {
     Table,
@@ -10,34 +12,33 @@ import {
 } from "@/components/ui/table"
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { cookies } from "next/headers";
-import { useUser } from "@/components/UserProvider";
-import { Button } from "@/components/ui/button";
+import LoadingScreen from "@/components/loading-screen";
 
+export default function Clients() {
+    const [clients, setClients] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
-export default async function Clients(props) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session")?.value;
+    useEffect(() => {
+        let ignore = false;
+        async function load() {
+            try {
+                const res = await fetch("/api/clients", { cache: "no-store" });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                if (!ignore) setClients(data || []);
+            } catch {
+                if (!ignore) setError("Failed to load clients");
+            } finally {
+                if (!ignore) setLoading(false);
+            }
+        }
+        load();
+        return () => { ignore = true };
+    }, [])
 
-    let error;
-
-
-    let Clients = [];
-    try {
-        const res = await fetch(`${process.env.NEXTJS_URL}/api/clients`, {
-            headers: {
-                Cookie: `session=${session}`,
-            },
-            cache: "no-store",
-        });
-        // if (!res.ok) throw new Error('Failed to load Clients');
-        if (res.ok)
-            Clients = await res.json();
-        else
-            error = "Failed to load clients"
-    } catch (e) {
-        // console.error("Failed to load Clients,", e);
-        Clients = [];
+    if (loading) {
+        return <LoadingScreen />
     }
     return (
         <PageLayout title="Client Records">
@@ -47,7 +48,7 @@ export default async function Clients(props) {
 
             {!error ? (
                 <>
-                    {Clients.length > 0 || <div className="container mx-auto">No clients has been made</div>}
+                    {clients.length > 0 || <div className="container mx-auto">No clients has been made</div>}
                     <Table className="container mx-auto border-separate border-spacing-y-4">
                         <TableHeader>
                             <TableRow>
@@ -59,7 +60,7 @@ export default async function Clients(props) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {Clients.map((Client, i) => (
+                            {clients.map((Client, i) => (
                                 <TableRow
                                     key={i}
                                     className="group"

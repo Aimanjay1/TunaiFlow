@@ -20,7 +20,7 @@ export default function Login() {
 
     if (await login(email, password)) {
       open("Login successful.", 3000);
-      router.replace("/");
+      router.replace("/dashboard");
     } else {
       open("Login failed. Please check your credentials.", 3000, "#ff0000");
     }

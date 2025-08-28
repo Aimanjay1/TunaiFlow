@@ -1,3 +1,5 @@
+"use client"
+import { useEffect, useState, useRef } from "react";
 import { PageLayout, PageButton, TH, Cell } from "@/components/PageCommon";
 import {
     Table,
@@ -8,10 +10,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { cookies } from "next/headers";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import LoadingScreen from "@/components/loading-screen";
 
 function ExpenseButton({ children, className, variant }) {
     variant = (variant ? "bg-" + variant : "bg-identity-dillute hover:bg-identity")
@@ -23,27 +26,33 @@ function ExpenseButton({ children, className, variant }) {
     )
 }
 
-export default async function Expenses(props) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session")?.value;
+export default function Expenses() {
+    const [expenses, setExpenses] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const [creating, setCreating] = useState(false)
+    const [newExpense, setNewExpense] = useState({ description: "", amount: "", date: new Date().toISOString().slice(0, 10) })
+    const creatingRowRef = useRef(null)
 
-    let error = null;
-    let Expenses = [];
-    try {
-        const res = await fetch(`${process.env.NEXTJS_URL}/api/expenses`, {
-            headers: {
-                Cookie: `session=${session}`,
-            },
-            method: "GET",
-            cache: 'no-store'
-        });
-        if (!res.ok) throw new Error('Failed to load Expenses');
-        Expenses = await res.json();
-    } catch (e) {
-        // console.error("Failed to load Expenses,", e);
-        Expenses = [];
-        error = "Failed to load Expenses"
-    }
+    useEffect(() => {
+        let ignore = false
+        async function load() {
+            try {
+                const res = await fetch("/api/expenses", { cache: "no-store" });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                if (!ignore) setExpenses(data || []);
+            } catch {
+                if (!ignore) setError("Failed to load Expenses");
+            } finally {
+                if (!ignore) setLoading(false);
+            }
+        }
+        load();
+        return () => { ignore = true }
+    }, [])
+
+    if (loading) return <LoadingScreen />
     return (
         <PageLayout title="Expenses" subtitle="Generate Expenses with just a click of a button">
             <PageButton href="expenses/new">Add New Expense</PageButton>
@@ -54,40 +63,70 @@ export default async function Expenses(props) {
                         <Table className={"container mx-auto border-2 border-identity-dillute/20 rounded-xl "}>
                             <TableHeader >
                                 <TableRow className={"bg-accent rounded-xl"}>
-                                    <TH>Item</TH>
-                                    <TH>Category</TH>
-                                    <TH>Quantity</TH>
-                                    <TH>Unit Price</TH>
-                                    <TH>Receipt</TH>
+                                    <TH>Description</TH>
+                                    <TH>Amount</TH>
+                                    <TH>Date</TH>
                                     <TH>Actions</TH>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {
-                                    Expenses.map((Expense, index) => (
-                                        <TableRow key={index} >
-                                            <Cell>
-                                                {Expense.description}
-                                            </Cell>
-                                            <Cell>
-                                                {Expense.amount}
-                                            </Cell>
-                                            <Cell>
-                                                {Expense.amount}
-                                            </Cell>
-                                            <Cell>
-                                                {Expense.date}
-                                            </Cell>
-                                            <Cell>
-                                                <Link href={Expense.ReceiptUrl || ""} className="text-identity-dillute hover:text-identity">{Expense.ReceiptUrl}</Link>
-                                            </Cell>
-                                            <Cell>
-                                                <ExpenseButton>Edit</ExpenseButton>
-                                                <ExpenseButton variant={"destructive"}>Delete</ExpenseButton>
-                                            </Cell>
-                                        </TableRow>
-                                    ))
-                                }
+                                {expenses.map((exp) => (
+                                    <TableRow key={exp.id || exp.expenseId || exp._tempId}>
+                                        <Cell>{exp.description}</Cell>
+                                        <Cell>{exp.amount}</Cell>
+                                        <Cell>{new Date(exp.date).toLocaleDateString()}</Cell>
+                                        <Cell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="outline" size="sm">•••</Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-32">
+                                                    <DropdownMenuItem onClick={() => startEdit(exp)}>Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem variant="destructive" onClick={() => handleDelete(exp)}>Delete</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </Cell>
+                                    </TableRow>
+                                ))}
+                                {creating && (
+                                    <TableRow ref={creatingRowRef} className="bg-muted/30">
+                                        <TableCell>
+                                            <Input
+                                                placeholder="Description"
+                                                value={newExpense.description}
+                                                onChange={(e) => setNewExpense(v => ({ ...v, description: e.target.value }))}
+                                                autoFocus
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="number"
+                                                placeholder="0"
+                                                value={newExpense.amount}
+                                                onChange={(e) => setNewExpense(v => ({ ...v, amount: e.target.value }))}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="date"
+                                                value={newExpense.date}
+                                                onChange={(e) => setNewExpense(v => ({ ...v, date: e.target.value }))}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button size="sm" className="bg-identity-dillute hover:bg-identity" onClick={submitNew} disabled={!newExpense.description || newExpense.amount === ""}>
+                                                Done
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                <TableRow>
+                                    <TableCell colSpan={4}>
+                                        <Button variant="outline" className="w-full" onClick={() => { if (!creating) { setCreating(true); setNewExpense({ description: "", amount: "", date: new Date().toISOString().slice(0, 10) }); } }} disabled={creating}>
+                                            +
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
 
 
                             </TableBody>
@@ -118,4 +157,44 @@ export default async function Expenses(props) {
 
         </PageLayout>
     )
+    function startEdit(exp) {
+        // Convert row to inline edit (optional future enhancement)
+        // Not implemented yet per requirements.
+    }
+
+    async function handleDelete(exp) {
+        // Optimistic remove
+        const id = exp.id || exp.expenseId;
+        if (!id) return;
+        const prev = expenses;
+        setExpenses(list => list.filter(e => (e.id || e.expenseId) !== id));
+        try {
+            await fetch(`/api/expenses/${id}`, { method: 'DELETE' });
+        } catch {
+            setExpenses(prev); // rollback
+        }
+    }
+
+    async function submitNew() {
+        if (!newExpense.description || newExpense.amount === "") return;
+        const payload = {
+            description: newExpense.description,
+            amount: Number(newExpense.amount),
+            date: new Date(newExpense.date).toISOString(),
+        };
+        try {
+            const res = await fetch('/api/expenses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error();
+            const created = await res.json();
+            setExpenses(list => [...list, created]);
+            setCreating(false);
+        } catch (e) {
+            // simple error handling
+            alert('Failed to create expense');
+        }
+    }
 }

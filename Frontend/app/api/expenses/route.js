@@ -23,8 +23,6 @@ export async function GET(request) {
 export async function POST(request) {
     const body = await request.json()
     const token = request.cookies.get(process.env.COOKIE_NAME)?.value;
-    // console.log("token", token)
-    // if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const url = `${process.env.BACKEND_URL}/api/Expenses`
     const res = await fetch(url, {
         headers: {

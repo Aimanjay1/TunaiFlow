@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+"use client"
 import { PageLayout, PageButton, TH, Cell } from "@/components/PageCommon";
 import { formatDate, formatDateOnly } from "@/utils/date"
 import {
@@ -12,49 +12,41 @@ import {
 } from "@/components/ui/table"
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import MarkPaidButton from "@/components/MarkPaidButton";
+import { useUser } from "@/components/UserProvider";
+import { useEffect, useState } from "react";
+import LoadingScreen from "@/components/loading-screen";
 
 
-export default async function Invoice(props) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session")?.value;
+export default function Invoice(props) {
+    const { user } = useUser();
+    const [invoices, setInvoices] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
-    let userId;
-    if (session) {
-        // Replace "your_jwt_secret" with your actual secret if you want to verify
-        const payload = jwt.decode(session); // Only decodes, does not verify
-        userId = payload?.sub || payload?.userId; // Adjust based on your JWT structure
-    }
+    useEffect(() => {
+        async function fetchInvoices() {
+            console.log("user", user)
+            const res = await fetch(`/api/invoices?userId=${user.sub}`, {
+                cache: "no-store",
+            });
 
-    let error;
-
-    const res = await fetch(`${process.env.NEXTJS_URL}/api/invoices?userId=${userId}`, {
-        headers: {
-            Cookie: `session=${session}`,
-        },
-        cache: "no-store",
-    });
-
-    let invoices;
-
-    if (!res.ok) {
-        if (res.status === 401) {
-            // Clear session cookie by calling logout API
-            // redirect("/api/auth/logout");
+            if (!res.ok) {
+                setError("Failed to load invoices")
+            } else {
+                setInvoices(await res.json());
+            }
+            setLoading(false)
         }
-        error = "Failed to load invoices"
-    } else {
-        invoices = await res.json();
-        // console.log(invoices.map((v, i) => {
-        //     return v.status === "Paid" ? "Paid" : null
-        // }))
-    }
+        fetchInvoices()
+    }, [])
 
-    invoices = invoices || [];
+    if (loading)
+        return (
+            <LoadingScreen />
+        )
 
     return (
         <PageLayout title="Invoices" subtitle="Generate invoices with just a click of a button">

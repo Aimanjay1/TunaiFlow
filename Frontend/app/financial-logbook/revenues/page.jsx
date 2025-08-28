@@ -1,3 +1,5 @@
+"use client"
+import { useEffect, useState } from "react";
 import { PageLayout, PageButton, TH, Cell } from "@/components/PageCommon";
 import {
     Table,
@@ -10,49 +12,36 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge";
 import { RadioGroupDemo } from "@/components/RadioGroupDemo";
-import { cookies } from "next/headers";
 import Link from "next/link";
-import { string } from "zod";
+import LoadingScreen from "@/components/loading-screen";
 
+export default function Revenues() {
+    const [revenues, setRevenues] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
-function RevenueButton({ children, className, variant }) {
-    variant = (variant ? "bg-" + variant : "bg-identity-dillute hover:bg-identity")
-    className = variant + " " + (className || "")
-    console.log("className,", className)
-    return (
-        <Button className={className} >
-            {children}
-        </Button >
-    )
-}
-
-export default async function Revenues(props) {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session")?.value;
-    let error;
-    let Revenues = [];
-    try {
-        const res = await fetch(`${process.env.NEXTJS_URL}/api/revenues`, {
-            headers: {
-                Cookie: `session=${session}`,
-            },
-            method: "GET",
-            cache: 'no-store'
-        });
-        // if (!res.ok) throw new Error('Failed to load Revenues');
-        if (res.ok) {
-            Revenues = await res.json();
-            console.log("res.ok Revenues", Revenues)
+    useEffect(() => {
+        let ignore = false;
+        async function load() {
+            try {
+                const res = await fetch("/api/revenues", { cache: "no-store" });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                if (!ignore) setRevenues(data || []);
+            } catch {
+                if (!ignore) setError("Failed to load Revenues");
+            } finally {
+                if (!ignore) setLoading(false);
+            }
         }
+        load();
+        return () => { ignore = true }
+    }, [])
 
-    } catch (e) {
-        console.log("!res.ok Revenues", Revenues)
-        Revenues = [];
-        error = "Failed to load Revenues"
-    }
-    let totalRev = 0
-    let revGoal = 1000
-    Revenues.map((v, i) => { totalRev += v.amount })
+    if (loading) return <LoadingScreen />
+
+    const totalRev = revenues.reduce((sum, r) => sum + (r.amount || 0), 0)
+    const revGoal = 1000
     return (
         <PageLayout title="Revenues">
             <div className="container mx-auto">
@@ -63,7 +52,7 @@ export default async function Revenues(props) {
                                 <RadioGroupDemo />
                             </div>
                             {
-                                Revenues.length > 0 || <div className="container mx-auto">No revenue has been made</div>
+                                revenues.length > 0 || <div className="container mx-auto">No revenue has been made</div>
                             }
                             <Table className={"max-w-2xl mx-auto border-2 border-identity-dillute/20 rounded-xl "}>
                                 <colgroup>
@@ -80,7 +69,7 @@ export default async function Revenues(props) {
                                 </TableHeader>
                                 <TableBody>
                                     {
-                                        Revenues.map((Revenue, index) => (
+                                        revenues.map((Revenue, index) => (
                                             <TableRow key={index} >
                                                 <Cell>
                                                     {Revenue.invoiceId}

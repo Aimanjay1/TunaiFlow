@@ -13,7 +13,7 @@ export async function GET(request) {
             Authorization: `Bearer ${token}`,
         },
     });
-    // console.log(res)
+    console.log("/api/Invoices response:", res)
 
     // If Flask always returns JSON, use:
     const data = await res.json().catch(() => null);

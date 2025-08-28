@@ -1,21 +1,50 @@
 
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Profile() {
   const router = useRouter();
   const [profile, setProfile] = useState({
-    fullName: "Muhammad Mustapha bin Karim",
-    companyName: "Hong Ling Market",
-    companyAddress: "No 23, Jalan Putra, 72300, Kelantan",
-    companyEmail: "hongling@gmail.com",
-    companyContact: "013-456 789",
-    companyLogo: "hllogo.jpg",
+    fullName: "-",
+    companyName: "-",
+    companyAddress: "-",
+    companyEmail: "-",
+    companyContact: "-",
+    companyLogo: "-",
     profilePic: "",
   });
   const [isEditMode, setIsEditMode] = useState(false);
   const [editProfile, setEditProfile] = useState(profile);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let ignore = false;
+    async function load() {
+      try {
+        const res = await fetch('/api/profile', { cache: 'no-store' });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (ignore) return;
+        // Map backend -> local model (preserve existing fields if backend omits)
+        const mapped = { ...profile };
+        if (data.fullName) mapped.fullName = data.fullName;
+        if (data.companyName) mapped.companyName = data.companyName;
+        if (data.email) mapped.companyEmail = data.email;
+        if (data.logoUrl) mapped.companyLogo = data.logoUrl;
+        setProfile(mapped);
+        setEditProfile(mapped);
+      } catch (e) {
+        if (!ignore) setError('Failed to load profile');
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    load();
+    return () => { ignore = true };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,6 +79,7 @@ export default function Profile() {
     setIsEditMode(true);
   };
 
+  if (loading) return <div className="p-8">Loading profile...</div>;
   return (
     <>
       {/* Header & Avatar Section */}
@@ -101,6 +131,7 @@ export default function Profile() {
 
       {/* Profile Card */}
       <div className="max-w-md mx-auto mt-4 bg-white rounded-xl shadow-lg p-6">
+        {error && <div className="mb-4 text-red-600 text-sm">{error}</div>}
         <form className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
