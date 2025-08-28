@@ -14,6 +14,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import GenerateInvoicePdfButton from "@/components/GenerateInvoicePdfButton";
+import SendInvoiceEmailButton from "@/components/SendInvoiceEmailButton";
 import MarkPaidButton from "@/components/MarkPaidButton";
 import { useUser } from "@/components/UserProvider";
 import { useEffect, useState } from "react";
@@ -124,14 +126,8 @@ export default function Invoice(props) {
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end" className="w-40 flex flex-col gap-2">
                                                             <Link href={`/invoices/${invoice.invoiceId || "#"}`} className={"bg-identity-dillute hover:bg-identity p-2 text-center text-white rounded-md"}>Invoice</Link>
-                                                            <Button className={"bg-identity-dillute hover:bg-identity"} onClick={async () => {
-                                                                await fetch(`/api/invoices/${invoice.invoiceId}/generate-pdf`, { method: 'POST' });
-                                                                alert('PDF generation requested');
-                                                            }}>Generate PDF</Button>
-                                                            <Button className={"bg-identity-dillute hover:bg-identity"} onClick={async () => {
-                                                                await fetch(`/api/invoices/${invoice.invoiceId}/send-email`, { method: 'POST' });
-                                                                alert('Email send requested');
-                                                            }}>Send Email</Button>
+                                                            <GenerateInvoicePdfButton invoiceId={invoice.invoiceId} />
+                                                            <SendInvoiceEmailButton invoiceId={invoice.invoiceId} />
                                                             {
                                                                 invoice.status === "Paid" ?
                                                                     <></>
