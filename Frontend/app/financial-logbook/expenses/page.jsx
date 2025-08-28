@@ -141,9 +141,7 @@ export default function Expenses() {
                                 <TableRow className={"bg-accent rounded-xl"}>
                                     <TH>Customers</TH>
                                     <TH>Status</TH>
-                                    <TH>Order Date
-
-                                    </TH>
+                                    <TH>Order Date</TH>
                                     <TH>Due Date</TH>
                                     <TH>Generate Expense</TH>
                                     <TH>Send an email</TH>

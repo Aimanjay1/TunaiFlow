@@ -122,9 +122,16 @@ export default function Invoice(props) {
                                                         <DropdownMenuTrigger asChild>
                                                             <PageButton className="h-6">v</PageButton>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-32 flex flex-col gap-2">
+                                                        <DropdownMenuContent align="end" className="w-40 flex flex-col gap-2">
                                                             <Link href={`/invoices/${invoice.invoiceId || "#"}`} className={"bg-identity-dillute hover:bg-identity p-2 text-center text-white rounded-md"}>Invoice</Link>
-                                                            <Button className={"bg-identity-dillute hover:bg-identity"}>send email</Button>
+                                                            <Button className={"bg-identity-dillute hover:bg-identity"} onClick={async () => {
+                                                                await fetch(`/api/invoices/${invoice.invoiceId}/generate-pdf`, { method: 'POST' });
+                                                                alert('PDF generation requested');
+                                                            }}>Generate PDF</Button>
+                                                            <Button className={"bg-identity-dillute hover:bg-identity"} onClick={async () => {
+                                                                await fetch(`/api/invoices/${invoice.invoiceId}/send-email`, { method: 'POST' });
+                                                                alert('Email send requested');
+                                                            }}>Send Email</Button>
                                                             {
                                                                 invoice.status === "Paid" ?
                                                                     <></>
