@@ -12,8 +12,15 @@ using Microsoft.AspNetCore.HttpOverrides;   // ✅ for proxy headers
 using Supabase;
 using QuestPDF.Infrastructure;
 using Npgsql;
+using DotNetEnv; // ✅ load .env
+
+// ✅ Load .env BEFORE building the host so ASP.NET Core can see those env vars
+try { Env.TraversePath().Load(); } catch { /* no .env found - ok */ }
 
 var builder = WebApplication.CreateBuilder(args);
+
+// (Re)ensure environment variables are a config source (after .env load)
+builder.Configuration.AddEnvironmentVariables();
 
 // 👉 Bind Kestrel to Render's dynamic PORT (fallback 8080 for local)
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
@@ -35,6 +42,7 @@ if (string.IsNullOrWhiteSpace(appConn))
     throw new InvalidOperationException("No DB connection string found for runtime (DB_CONN_APP / ConnectionStrings:AppConnection / DefaultConnection).");
 
 // ===== Log both (no secrets) =====
+Console.WriteLine($"[CFG] ENV={builder.Environment.EnvironmentName}");
 try
 {
     var m = new NpgsqlConnectionStringBuilder(migrateConn);
@@ -239,6 +247,15 @@ app.MapGet("/_debug/db", () =>
     });
 });
 
+// Ensure protocol log dir exists if configured (e.g., "wwwroot/logs")
+try
+{
+    var root = app.Environment.ContentRootPath;
+    var logDir = System.IO.Path.Combine(root, "wwwroot", "logs");
+    System.IO.Directory.CreateDirectory(logDir);
+}
+catch { /* ignore */ }
+
 // ===== Apply EF migrations at startup using MIGRATION connection, with fallback to RUNTIME =====
 var skipMigrations = (Environment.GetEnvironmentVariable("SKIP_MIGRATIONS") ?? "false")
                      .Equals("true", StringComparison.OrdinalIgnoreCase);
@@ -250,7 +267,7 @@ if (!skipMigrations)
         using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        // 1) Try preferred: MIGRATE (typically session pooler 5432)
+        // 1) Try preferred: MIGRATE (typically direct 5432)
         db.Database.SetConnectionString(migrateConn);
         app.Logger.LogInformation("DB: trying to connect & migrate via MIGRATE connection…");
         await db.Database.MigrateAsync();
