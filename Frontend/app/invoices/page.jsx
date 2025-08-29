@@ -20,6 +20,7 @@ import MarkPaidButton from "@/components/MarkPaidButton";
 import { useUser } from "@/components/UserProvider";
 import { useEffect, useState } from "react";
 import LoadingScreen from "@/components/loading-screen";
+import GetReceiptButton from "@/components/GetReceiptButton";
 
 
 export default function Invoice(props) {
@@ -28,22 +29,18 @@ export default function Invoice(props) {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    useEffect(() => {
-        async function fetchInvoices() {
-            console.log("user", user)
-            const res = await fetch(`/api/invoices?userId=${user.sub}`, {
-                cache: "no-store",
-            });
-
-            if (!res.ok) {
-                setError("Failed to load invoices")
-            } else {
-                setInvoices(await res.json());
-            }
-            setLoading(false)
+    async function fetchInvoices() {
+        if (!user?.sub) return;
+        const res = await fetch(`/api/invoices?userId=${user.sub}`, { cache: "no-store" });
+        if (!res.ok) {
+            setError("Failed to load invoices");
+        } else {
+            setInvoices(await res.json());
         }
-        fetchInvoices()
-    }, [])
+        setLoading(false);
+    }
+
+    useEffect(() => { fetchInvoices(); }, [user?.sub])
 
     if (loading)
         return (
@@ -61,12 +58,16 @@ export default function Invoice(props) {
                             invoices.length > 0 || <div className="container mx-auto">No invoices has been made</div>
                         }
                         <Table className={"container mx-auto mb-20 "}>
+                            <colgroup>
+                                <col className="min-w-[150px] w-[300px] md:w-1/3" />
+                            </colgroup>
                             <TableHeader >
                                 <TableRow className={"bg-accent rounded-xl"}>
                                     <TH>Customers</TH>
                                     <TH>Status</TH>
                                     <TH>Order Date</TH>
                                     <TH>Due Date</TH>
+                                    <TH>Total Amount</TH>
                                     <TH>Receipt</TH>
                                     <TH>Actions</TH>
                                 </TableRow>
@@ -75,12 +76,12 @@ export default function Invoice(props) {
                                 {
                                     invoices.map((invoice, index) => (
                                         <TableRow key={index} >
-                                            <Cell>
-                                                <div className="flex flex-col">
-                                                    <div className="">{invoice.clientName || "Client"}</div>
-                                                    <div className="">{invoice.clientId}</div>
+                                            <TableCell className={""}>
+                                                <div className="flex flex-col mx-auto  items-center text-center ">
+                                                    <div className="text-wrap wrap-anywhere w-fit line-clamp-1 overflow-clip overflow-ellipsis">{invoice.clientName || "Client"}</div>
+                                                    <div className="w-fit text-gray-400">id: {invoice.clientId}</div>
                                                 </div>
-                                            </Cell>
+                                            </TableCell>
                                             <Cell>
                                                 <div className="border-1 border-black h-6 p-2 w-fit mx-auto rounded-md justify-center items-center flex gap-2">
                                                     {
@@ -114,9 +115,19 @@ export default function Invoice(props) {
                                                 {formatDateOnly(invoice.dueDate)}
                                             </Cell>
                                             <Cell>
-                                                <Link href={`/invoices${invoice.receiptId ? "/" + invoice.receiptId : "#"}`} className=" underline ">
-                                                    {(invoice.receiptId ? "Receipt " + invoice.receiptId : "No receipt")}
-                                                </Link>
+                                                {invoice.totalAmount}
+                                            </Cell>
+                                            <Cell>
+                                                {invoice.receiptId ? (
+                                                    <Link
+                                                        href={invoice.receiptUrl}
+                                                        className="underline"
+                                                    >
+                                                        Receipt {invoice.receiptId}
+                                                    </Link>
+                                                ) : (
+                                                    <GetReceiptButton onRefetch={fetchInvoices} invoiceId={invoice.invoiceId} />
+                                                )}
                                             </Cell>
                                             <Cell>
                                                 <div className="w-full flex justify-center">

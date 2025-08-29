@@ -10,13 +10,13 @@ export default function Header(props) {
     console.log("user,", user)
 
     return (
-        <div className="flex w-full bg-accent py-4 items-center justify-between ">
+        <div className="flex w-full bg-accent py-4 items-center justify-between z-10 ">
             <div className="flex gap-4 px-2 ">
                 {/* <Button className="bg-accent hover:bg-accent/20 hover:-translate-y-0.5 hover:shadow-xl">
                     <HamburgerMenuIcon className="text-primary w-8 h-8" />
                 </Button> */}
-                <SidebarTrigger className={"hover:-translate-y-[1px] hover:shadow-sm hover:cursor-pointer"} />
-                <h1 className="flex w-full font-bold text-2xl text-identity"><Link href={"/"}>TunaiFlow</Link></h1>
+                <SidebarTrigger className={"hover:-translate-y-[1px] hover:shadow-sm hover:cursor-pointer z-10"} />
+                <h1 className="flex w-full font-bold text-2xl text-identity z-10"><Link href={"/"}>TunaiFlow</Link></h1>
             </div>
 
             <div className=" pr-4 flex items-center gap-2" >

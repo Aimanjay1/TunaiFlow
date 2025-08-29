@@ -18,6 +18,7 @@ export async function GET(request) {
     if (!res.ok) {
         return NextResponse.json({ error: data?.error || "Failed to fetch Revenues" }, { status: res.status });
     }
+
     return NextResponse.json(data, { status: res.status });
 }
 export async function POST(request) {

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 
-export async function POST(req, { params }) {
-  const id = params.id;
+export async function POST(request, { params }) {
+  const { id } = await params
+  const b = await (request).json()
+  console.log(b)
   if (!id) return NextResponse.json({ error: "Missing invoice id" }, { status: 400 });
-  const token = req.cookies.get(process.env.COOKIE_NAME)?.value;
+  const token = request.cookies.get(process.env.COOKIE_NAME)?.value;
   if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
@@ -14,6 +16,7 @@ export async function POST(req, { params }) {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify(b)
     });
     let body = await res.json().catch(() => null);
     if (!res.ok) {
@@ -21,6 +24,7 @@ export async function POST(req, { params }) {
     }
     return NextResponse.json({ ok: true, message: body?.message || 'Email queued' });
   } catch (e) {
-    return NextResponse.json({ error: 'Network error' }, { status: 500 });
+    console.log(e)
+    return NextResponse.json({ error: e }, { status: 500 });
   }
 }

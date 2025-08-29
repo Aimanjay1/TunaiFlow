@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\fs561\\code\\TunaiFlow\\TunaiFlow\\Backend\\BizOpsAPI.csproj": {}
+    "D:\\DCIM\\Back Up\\projects\\JavaScript Learn\\TunaiFlow\\Backend\\BizOpsAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\fs561\\code\\TunaiFlow\\TunaiFlow\\Backend\\BizOpsAPI.csproj": {
+    "D:\\DCIM\\Back Up\\projects\\JavaScript Learn\\TunaiFlow\\Backend\\BizOpsAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\fs561\\code\\TunaiFlow\\TunaiFlow\\Backend\\BizOpsAPI.csproj",
+        "projectUniqueName": "D:\\DCIM\\Back Up\\projects\\JavaScript Learn\\TunaiFlow\\Backend\\BizOpsAPI.csproj",
         "projectName": "BizOpsAPI",
-        "projectPath": "C:\\Users\\fs561\\code\\TunaiFlow\\TunaiFlow\\Backend\\BizOpsAPI.csproj",
-        "packagesPath": "C:\\Users\\fs561\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\fs561\\code\\TunaiFlow\\TunaiFlow\\Backend\\obj\\",
+        "projectPath": "D:\\DCIM\\Back Up\\projects\\JavaScript Learn\\TunaiFlow\\Backend\\BizOpsAPI.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "D:\\DCIM\\Back Up\\projects\\JavaScript Learn\\TunaiFlow\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\fs561\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"

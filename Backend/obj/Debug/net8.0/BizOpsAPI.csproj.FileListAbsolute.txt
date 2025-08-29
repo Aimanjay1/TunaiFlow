@@ -665,3 +665,5 @@ D:\DCIM\Back Up\projects\JavaScript Learn\TunaiFlow\Backend\obj\Debug\net8.0\Biz
 D:\DCIM\Back Up\projects\JavaScript Learn\TunaiFlow\Backend\obj\Debug\net8.0\ref\BizOpsAPI.dll
 C:\Users\fs561\code\TunaiFlow\TunaiFlow\Backend\bin\Debug\net8.0\DotNetEnv.dll
 C:\Users\fs561\code\TunaiFlow\TunaiFlow\Backend\bin\Debug\net8.0\Sprache.dll
+D:\DCIM\Back Up\projects\JavaScript Learn\TunaiFlow\Backend\bin\Debug\net8.0\DotNetEnv.dll
+D:\DCIM\Back Up\projects\JavaScript Learn\TunaiFlow\Backend\bin\Debug\net8.0\Sprache.dll

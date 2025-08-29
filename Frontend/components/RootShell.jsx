@@ -23,7 +23,7 @@ export default function RootShell({ children }) {
     return (
         <UserProvider>
             <ToastProvider>
-                <SidebarProvider defaultOpen={false} className="md:flex-row overflow-x-hidden">
+                <SidebarProvider defaultOpen={true} className="md:flex-row overflow-x-hidden">
                     <AppSidebar />
                     <SidebarInset className="min-w-0 h-screen">
                         <RequireAuth>

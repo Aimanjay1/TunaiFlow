@@ -19,8 +19,7 @@ import { Separator } from "./ui/separator";
 import { useUser } from "./UserProvider";
 import { Avatar } from "./ui/avatar";
 
-export function AppSidebar(request) {
-    // console.log(request)
+export function AppSidebar() {
     const sidebar = useSidebar();
     const isMobile = useIsMobile();
 
