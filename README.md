@@ -85,11 +85,11 @@ Setup instructions:
     
     dotnet user-secrets set "ASPNETCORE_ENVIRONMENT" "Development"
 
-  - then, you can run it with:
-    
-    dotnet run
-
-  - then, go to http://localhost:5226/swagger to access the swagger.
+     - then, you can run it with:
+       
+       dotnet run
+   
+     - then, go to http://localhost:5226/swagger to access the swagger.
 
 4. Frontend Configuration
 
