@@ -23,6 +23,7 @@ Infra: Frontend on Vercel, backend on Render, Supabase PostgreSQL + Storage; str
 
 
 Technology stack used:
+
 Frontend
 - Next.js (React)
 - Tailwind CSS (UI styling)
@@ -62,7 +63,7 @@ Setup instructions:
    - cd Frontend or cd Backend
 
 3. Backend Configuration
-   - insert this commands after the directory of Backend:
+   1. insert this commands after the directory of Backend:
 
     dotnet user-secrets set "Supabase:ServiceRoleKey" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuc3VjdWltb2l6a3NyYXdiY3dwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY2NjU4MSwiZXhwIjoyMDcxMjQyNTgxfQ.0dZtE7ueLqGX-jOI0vB2LtBeBtgZf1IAUVSBtekGpu8"
     
@@ -85,11 +86,11 @@ Setup instructions:
     
     dotnet user-secrets set "ASPNETCORE_ENVIRONMENT" "Development"
 
-     - then, you can run it with:
+   2. then, you can run it with:
        
        dotnet run
    
-     - then, go to http://localhost:5226/swagger to access the swagger.
+   3. then, go to [http://localhost:5226/swagger])(http://localhost:5226/swagger) to access the swagger.
 
 4. Frontend Configuration
 
