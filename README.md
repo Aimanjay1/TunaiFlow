@@ -91,7 +91,8 @@ dotnet user-secrets set "ASPNETCORE_ENVIRONMENT" "Development"
 dotnet run
 ```
    3. then, go to [http://localhost:5226/swagger](http://localhost:5226/swagger) to access the swagger.
-4. Frontend Configuration
+   
+5. Frontend Configuration
    1. Go into Frontend directory 
 ```
 cd Frontend
