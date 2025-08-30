@@ -4,7 +4,7 @@ import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toasts";
 
-export default function MarkPaidButton({ invoiceId, children = "Mark paid" }) {
+export default function MarkPaidButton({ invoiceId, onPaid, children = "Mark paid" }) {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { open } = useToast();
@@ -19,7 +19,11 @@ export default function MarkPaidButton({ invoiceId, children = "Mark paid" }) {
             });
             if (res.ok) {
                 open("Invoice marked as paid", 2500);
-                router.refresh();
+                if (typeof onPaid === 'function') {
+                    try { onPaid(); } catch { }
+                } else {
+                    router.refresh();
+                }
             } else {
                 const err = await res.json().catch(() => ({}));
                 open(err.error || "Failed to mark invoice", 4000, "#ff0000");

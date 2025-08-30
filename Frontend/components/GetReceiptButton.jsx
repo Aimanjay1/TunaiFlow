@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toasts";
 import { useRouter } from "next/navigation";
 
-export default function GetReceiptButton({ invoiceId, onRefetch, children = "Get receipt" }) {
+export default function GetReceiptButton() {
     const [loading, setLoading] = useState(false);
     const { open } = useToast();
     const router = useRouter();
@@ -43,9 +43,9 @@ export default function GetReceiptButton({ invoiceId, onRefetch, children = "Get
         <Button
             onClick={handleClick}
             disabled={loading}
-            className="bg-identity-dillute hover:bg-identity disabled:opacity-50 disabled:cursor-not-allowed w-full"
+            className="bg-identity-dillute hover:bg-identity disabled:opacity-50 disabled:cursor-not-allowed w-fit block"
         >
-            {loading ? "Ingesting..." : children}
+            {loading ? "Ingesting emails..." : "Get Receipts"}
         </Button>
     );
 }

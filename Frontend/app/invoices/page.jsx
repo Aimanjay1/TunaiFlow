@@ -22,6 +22,34 @@ import { useEffect, useState } from "react";
 import LoadingScreen from "@/components/loading-screen";
 import GetReceiptButton from "@/components/GetReceiptButton";
 
+function Status({ status }) {
+    return (
+        <div className="border-1 border-black h-6 p-2 w-fit mx-auto rounded-md justify-center items-center flex gap-2">
+            {
+                (status === "Unpaid") ?
+                    (
+                        <>
+                            <div className="h-3 w-3 rounded-full bg-red-500" />
+                            Unpaid
+                        </>
+                    ) : status === "Paid" ?
+                        (
+                            <>
+                                <div className="h-3 w-3 rounded-full bg-green-500" />
+                                Paid
+
+                            </>
+                        ) : (
+                            <>
+                                <div className="h-3 w-3 rounded-full bg-gray-500" />
+                                Cancelled
+
+                            </>
+                        )
+            }
+        </div>
+    )
+}
 
 export default function Invoice(props) {
     const { user } = useUser();
@@ -49,7 +77,10 @@ export default function Invoice(props) {
 
     return (
         <PageLayout title="Invoices" subtitle="Generate invoices with just a click of a button">
-            <PageButton href="invoices/new">Add New Invoice</PageButton>
+            <div className="flex gap-4 w-full justify-between">
+                <PageButton href="invoices/new">Add New Invoice</PageButton>
+                <GetReceiptButton onRefetch={fetchInvoices} />
+            </div>
             {
 
                 !error ?
@@ -59,11 +90,12 @@ export default function Invoice(props) {
                         }
                         <Table className={"container mx-auto mb-20 "}>
                             <colgroup>
-                                <col className="min-w-[150px] w-[300px] md:w-1/3" />
+                                <col className="min-w-[150px] w-[300px] " />
                             </colgroup>
                             <TableHeader >
                                 <TableRow className={"bg-accent rounded-xl"}>
                                     <TH>Customers</TH>
+                                    <TH>Description</TH>
                                     <TH>Status</TH>
                                     <TH>Order Date</TH>
                                     <TH>Due Date</TH>
@@ -83,29 +115,34 @@ export default function Invoice(props) {
                                                 </div>
                                             </TableCell>
                                             <Cell>
-                                                <div className="border-1 border-black h-6 p-2 w-fit mx-auto rounded-md justify-center items-center flex gap-2">
+                                                <div className="">
                                                     {
-                                                        (invoice.status === "Unpaid") ?
-                                                            (
-                                                                <>
-                                                                    <div className="h-3 w-3 rounded-full bg-red-500" />
-                                                                    Unpaid
-                                                                </>
-                                                            ) : invoice.status === "Paid" ?
+                                                        invoice.items.map((value, index) => {
+                                                            return (index < 3 ?
                                                                 (
                                                                     <>
-                                                                        <div className="h-3 w-3 rounded-full bg-green-500" />
-                                                                        Paid
-
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <div className="h-3 w-3 rounded-full bg-gray-500" />
-                                                                        Cancelled
+                                                                        <p key={index} className=" inline underline">
+                                                                            {value.itemName}
+                                                                        </p>{invoice.items.length == index + 1 ? null : <p className="inline whitespace-pre">,  </p>}
 
                                                                     </>
                                                                 )
+                                                                :
+                                                                null
+                                                            )
+                                                        }
+                                                        )
                                                     }
+                                                    {
+                                                        invoice.items.length >= 3 ? "..." : ""
+                                                    }
+
+
+                                                </div>
+                                            </Cell>
+                                            <Cell>
+                                                <div className="">
+                                                    <Status status={invoice.status} />
                                                 </div>
                                             </Cell>
                                             <Cell>
@@ -126,7 +163,12 @@ export default function Invoice(props) {
                                                         Receipt {invoice.receiptId}
                                                     </Link>
                                                 ) : (
-                                                    <GetReceiptButton onRefetch={fetchInvoices} invoiceId={invoice.invoiceId} />
+                                                    <Link
+                                                        href={"#"}
+                                                        className="underline text-gray-400"
+                                                    >
+                                                        No Receipt
+                                                    </Link>
                                                 )}
                                             </Cell>
                                             <Cell>
@@ -143,7 +185,10 @@ export default function Invoice(props) {
                                                                 invoice.status === "Paid" ?
                                                                     <></>
                                                                     :
-                                                                    <MarkPaidButton invoiceId={invoice.invoiceId}>mark paid</MarkPaidButton>
+                                                                    <MarkPaidButton
+                                                                        invoiceId={invoice.invoiceId}
+                                                                        onPaid={() => setInvoices(prev => prev.map(iv => iv.invoiceId === invoice.invoiceId ? { ...iv, status: 'Paid' } : iv))}
+                                                                    >mark paid</MarkPaidButton>
                                                             }
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>

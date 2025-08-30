@@ -147,13 +147,6 @@ export default function AddInvoice() {
                 <div>
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="text-xl font-semibold">Items</h2>
-                        <Button
-                            variant="secondary"
-                            onClick={addDraftAsItem}
-                            disabled={!draft.itemName.trim()}
-                        >
-                            Add Item
-                        </Button>
                     </div>
                     <Table className="w-full table-fixed">
                         {/* Compact colgroup: only <col> elements, no whitespace text nodes */}
@@ -205,6 +198,17 @@ export default function AddInvoice() {
                                 <Cell className="text-right">
                                     <span className="text-xs text-muted-foreground">New</span>
                                 </Cell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell>
+                                    <Button
+                                        variant="secondary"
+                                        onClick={addDraftAsItem}
+                                        disabled={!draft.itemName.trim()}
+                                    >
+                                        Add Item
+                                    </Button>
+                                </TableCell>
                             </TableRow>
 
                             {/* Added items */}
