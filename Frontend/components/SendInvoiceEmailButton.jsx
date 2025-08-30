@@ -4,11 +4,19 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toasts";
 import { useRouter } from "next/navigation";
 
-export default function SendInvoiceEmailButton({ invoiceId, children = "Send Email" }) {
+export default function SendInvoiceEmailButton({ invoiceId, items = [] }) {
     const [loading, setLoading] = useState(false);
     const { open } = useToast();
     const router = useRouter();
 
+    // Build a simple bullet list of item names for email context
+    const itemsString = items && items.length
+        ? items.map(i => {
+            // console.log(i.itemName)
+            return `- ${i.itemName}`
+        }).join(", \n")
+        : "(No line items)";
+    console.log(itemsString)
     async function handleClick(e) {
         e.preventDefault();
         if (loading) return;
@@ -16,7 +24,12 @@ export default function SendInvoiceEmailButton({ invoiceId, children = "Send Ema
         try {
             const res = await fetch(`/api/invoices/${invoiceId}/send-email`, {
                 method: "POST",
-                body: JSON.stringify({ message: "Ini dia man" })
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: `Items (names only):\n${itemsString}`
+                })
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
@@ -39,7 +52,7 @@ export default function SendInvoiceEmailButton({ invoiceId, children = "Send Ema
             disabled={loading}
             className="bg-identity-dillute hover:bg-identity disabled:opacity-50 disabled:cursor-not-allowed w-full"
         >
-            {loading ? "Sending…" : children}
+            {loading ? "Sending…" : "Send Email"}
         </Button>
     );
 }

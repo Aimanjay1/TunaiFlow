@@ -59,7 +59,7 @@ export async function GET(request) {
                 }
             }
         }
-
+        // console.log(invoices.map((value) => value.items))
         return NextResponse.json(invoices, { status: 200 });
 
     } catch (e) {

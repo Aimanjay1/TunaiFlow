@@ -11,7 +11,7 @@ export default function RootShell({ children }) {
     const pathname = usePathname()
 
     // For auth routes, don't render the app shell; let /auth layout control the UI.
-    if (pathname?.startsWith("/auth")) {
+    if (pathname?.startsWith("/auth") || pathname === "/") {
         return (
             <UserProvider>
                 <ToastProvider>{children}</ToastProvider>

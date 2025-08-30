@@ -41,6 +41,7 @@ export default function AddInvoice() {
 
     // Items actually added
     const [items, setItems] = useState([]);
+    const [submitting, setSubmitting] = useState(false); // prevent double submit
 
     // Draft item (input row)
     const [draft, setDraft] = useState({
@@ -80,6 +81,8 @@ export default function AddInvoice() {
     const { user } = useUser();
 
     async function handleSubmit() {
+        if (submitting) return; // debounce guard
+        setSubmitting(true);
         const draftData = {
             clientId: Number(form.getValues("clientId")),
             userId: user.sub,
@@ -107,6 +110,8 @@ export default function AddInvoice() {
             }
         } catch (err) {
             open("Network error", 4000);
+        } finally {
+            setSubmitting(false);
         }
     }
 
@@ -148,121 +153,174 @@ export default function AddInvoice() {
                     <div className="flex items-center justify-between mb-2">
                         <h2 className="text-xl font-semibold">Items</h2>
                     </div>
-                    <Table className="w-full table-fixed">
-                        {/* Compact colgroup: only <col> elements, no whitespace text nodes */}
-                        <colgroup><col /><col className="w-32" /><col className="w-28" /><col className="w-20" /><col className="w-28" /></colgroup>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Item Name</TableHead>
-                                <TableHead>Unit Price</TableHead>
-                                <TableHead>Qty</TableHead>
-                                <TableHead className="text-right pr-4">Total</TableHead>
-                                <TableHead className="text-right pr-4">Line</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {/* Draft input row */}
-                            <TableRow className="bg-muted/30">
-                                <Cell>
+                    {/* Desktop / Tablet table */}
+                    <div className="hidden md:block">
+                        <Table className="w-full table-fixed">
+                            <colgroup><col /><col className="w-32" /><col className="w-28" /><col className="w-20" /><col className="w-28" /></colgroup>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item Name</TableHead>
+                                    <TableHead>Unit Price</TableHead>
+                                    <TableHead>Qty</TableHead>
+                                    <TableHead className="text-right pr-4">Total</TableHead>
+                                    <TableHead className="text-right pr-4">Line</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                <TableRow className="bg-muted/30">
+                                    <Cell>
+                                        <Input
+                                            className={"bg-background"}
+                                            placeholder="Item Name"
+                                            value={draft.itemName}
+                                            onChange={e => setDraft(d => ({ ...d, itemName: e.target.value }))}
+                                        />
+                                    </Cell>
+                                    <Cell>
+                                        <Input
+                                            className={"bg-background"}
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            placeholder="0.00"
+                                            value={draft.unitPrice}
+                                            onChange={e => setDraft(d => ({ ...d, unitPrice: e.target.value }))}
+                                        />
+                                    </Cell>
+                                    <Cell>
+                                        <Input
+                                            className={"bg-background"}
+                                            type="number"
+                                            step="1"
+                                            min="1"
+                                            placeholder="1"
+                                            value={draft.quantity}
+                                            onChange={e => setDraft(d => ({ ...d, quantity: e.target.value }))}
+                                        />
+                                    </Cell>
+                                    <Cell />
+                                    <Cell className="text-right">
+                                        <span className="text-xs text-muted-foreground">New</span>
+                                    </Cell>
+                                </TableRow>
+                                <TableRow>
+                                    <TableCell>
+                                        <Button
+                                            variant="secondary"
+                                            onClick={addDraftAsItem}
+                                            disabled={!draft.itemName.trim()}
+                                        >
+                                            Add Item
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                                {items.map((item, i) => {
+                                    const line = (item.unitPrice || 0) * (item.quantity || 0);
+                                    return (
+                                        <TableRow key={i}>
+                                            <Cell>{item.itemName}</Cell>
+                                            <Cell>RM {item.unitPrice.toFixed(2)}</Cell>
+                                            <Cell>{item.quantity}</Cell>
+                                            <Cell><span className="tabular-nums">RM {line.toFixed(2)}</span></Cell>
+                                            <Cell className="text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <Button size="sm" variant="destructive" onClick={() => removeItem(i)}>Del</Button>
+                                                </div>
+                                            </Cell>
+                                        </TableRow>
+                                    )
+                                })}
+                                <TableRow>
+                                    <TableCell colSpan={5}>
+                                        <div className="flex justify-between items-center py-2 border-t mt-2 text-sm">
+                                            <div className="space-y-1">
+                                                <p className="font-medium">Preview (live)</p>
+                                                <p className="text-muted-foreground">Totals update as you edit.</p>
+                                            </div>
+                                            <div className="text-right space-y-0.5">
+                                                <div>Subtotal: <span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
+                                                {taxRate > 0 && (
+                                                    <div>Tax ({(taxRate * 100).toFixed(0)}%): <span className="font-medium">RM {tax.toFixed(2)}</span></div>
+                                                )}
+                                                <div className="text-lg font-semibold">Total: RM {total.toFixed(2)}</div>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </div>
+                    {/* Mobile stacked layout */}
+                    <div className="md:hidden space-y-4">
+                        <div className="p-4 rounded-md border bg-card space-y-3">
+                            <div className="grid gap-2">
+                                <Input
+                                    placeholder="Item name"
+                                    value={draft.itemName}
+                                    onChange={e => setDraft(d => ({ ...d, itemName: e.target.value }))}
+                                />
+                                <div className="flex gap-2">
                                     <Input
-                                        className={"bg-background"}
-                                        placeholder="Item Name"
-                                        value={draft.itemName}
-                                        onChange={e => setDraft(d => ({ ...d, itemName: e.target.value }))}
-                                    />
-                                </Cell>
-                                <Cell>
-                                    <Input
-                                        className={"bg-background"}
                                         type="number"
-                                        step="0.01"
                                         min="0"
-                                        placeholder="0.00"
+                                        step="0.01"
+                                        className="flex-1"
+                                        placeholder="Unit price"
                                         value={draft.unitPrice}
                                         onChange={e => setDraft(d => ({ ...d, unitPrice: e.target.value }))}
                                     />
-                                </Cell>
-                                <Cell>
                                     <Input
-                                        className={"bg-background"}
                                         type="number"
-                                        step="1"
                                         min="1"
-                                        placeholder="1"
+                                        step="1"
+                                        className="w-24"
+                                        placeholder="Qty"
                                         value={draft.quantity}
                                         onChange={e => setDraft(d => ({ ...d, quantity: e.target.value }))}
                                     />
-                                </Cell>
-                                <Cell>
-                                </Cell>
-                                <Cell className="text-right">
-                                    <span className="text-xs text-muted-foreground">New</span>
-                                </Cell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>
-                                    <Button
-                                        variant="secondary"
-                                        onClick={addDraftAsItem}
-                                        disabled={!draft.itemName.trim()}
-                                    >
-                                        Add Item
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-
-                            {/* Added items */}
+                                </div>
+                                <Button
+                                    variant="secondary"
+                                    disabled={!draft.itemName.trim()}
+                                    onClick={addDraftAsItem}
+                                >Add Item</Button>
+                            </div>
+                        </div>
+                        {items.length === 0 && (
+                            <p className="text-sm text-muted-foreground">No items added yet.</p>
+                        )}
+                        <div className="space-y-3">
                             {items.map((item, i) => {
                                 const line = (item.unitPrice || 0) * (item.quantity || 0);
                                 return (
-                                    <TableRow key={i}>
-                                        <Cell>{item.itemName}</Cell>
-                                        <Cell>RM {item.unitPrice.toFixed(2)}</Cell>
-                                        <Cell>{item.quantity}</Cell>
-                                        <Cell>{
-                                            <span className="tabular-nums">RM {line.toFixed(2)}</span>
-
-                                        }</Cell>
-                                        <Cell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    onClick={() => removeItem(i)}
-                                                >
-                                                    Del
-                                                </Button>
-                                            </div>
-                                        </Cell>
-                                    </TableRow>
-                                )
-                            })}
-
-                            <TableRow>
-                                <TableCell colSpan={5}>
-                                    <div className="flex justify-between items-center py-2 border-t mt-2 text-sm">
-                                        <div className="space-y-1">
-                                            <p className="font-medium">Preview (live)</p>
-                                            <p className="text-muted-foreground">Totals update as you edit.</p>
+                                    <div key={i} className="p-3 border rounded-md bg-muted/30 flex flex-col gap-1">
+                                        <div className="flex justify-between items-start">
+                                            <h3 className="font-medium break-words pr-4">{item.itemName}</h3>
+                                            <Button size="sm" variant="destructive" onClick={() => removeItem(i)}>Del</Button>
                                         </div>
-                                        <div className="text-right space-y-0.5">
-                                            <div>Subtotal: <span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
-                                            {taxRate > 0 && (
-                                                <div>Tax ({(taxRate * 100).toFixed(0)}%): <span className="font-medium">RM {tax.toFixed(2)}</span></div>
-                                            )}
-                                            <div className="text-lg font-semibold">Total: RM {total.toFixed(2)}</div>
+                                        <div className="flex flex-wrap text-xs gap-3 text-muted-foreground">
+                                            <span>Unit: RM {item.unitPrice.toFixed(2)}</span>
+                                            <span>Qty: {item.quantity}</span>
+                                            <span className="font-semibold text-foreground">Line: RM {line.toFixed(2)}</span>
                                         </div>
                                     </div>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+                                )
+                            })}
+                        </div>
+                        <div className="p-4 border rounded-md bg-background space-y-1 text-sm">
+                            <div className="flex justify-between"><span>Subtotal</span><span className="font-medium">RM {subtotal.toFixed(2)}</span></div>
+                            {taxRate > 0 && <div className="flex justify-between"><span>Tax {(taxRate * 100).toFixed(0)}%</span><span className="font-medium">RM {tax.toFixed(2)}</span></div>}
+                            <div className="flex justify-between text-base font-semibold"><span>Total</span><span>RM {total.toFixed(2)}</span></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="flex gap-4 justify-end">
                     <Button variant="outline" onClick={() => open("Canceled (no action)", 2500)}>Cancel</Button>
                     {/* <Button variant="secondary" onClick={handleSaveDraft}>Save Draft</Button> */}
-                    <Button onClick={handleSubmit}>Submit</Button>
+                    <Button onClick={handleSubmit} disabled={submitting} className="min-w-28">
+                        {submitting ? "Submitting…" : "Submit"}
+                    </Button>
                 </div>
             </div>
             <Toaster />

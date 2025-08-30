@@ -120,12 +120,11 @@ export default function Invoice(props) {
                                                         invoice.items.map((value, index) => {
                                                             return (index < 3 ?
                                                                 (
-                                                                    <>
-                                                                        <p key={index} className=" inline underline">
+                                                                    <div key={index}>
+                                                                        <p className=" inline underline">
                                                                             {value.itemName}
                                                                         </p>{invoice.items.length == index + 1 ? null : <p className="inline whitespace-pre">,  </p>}
-
-                                                                    </>
+                                                                    </div>
                                                                 )
                                                                 :
                                                                 null
@@ -180,7 +179,7 @@ export default function Invoice(props) {
                                                         <DropdownMenuContent align="end" className="w-40 flex flex-col gap-2">
                                                             <Link href={`/invoices/${invoice.invoiceId || "#"}`} className={"bg-identity-dillute hover:bg-identity p-2 text-center text-white rounded-md"}>Invoice</Link>
                                                             <GenerateInvoicePdfButton invoiceId={invoice.invoiceId} />
-                                                            <SendInvoiceEmailButton invoiceId={invoice.invoiceId} />
+                                                            <SendInvoiceEmailButton invoiceId={invoice.invoiceId} items={invoice.items} />
                                                             {
                                                                 invoice.status === "Paid" ?
                                                                     <></>
