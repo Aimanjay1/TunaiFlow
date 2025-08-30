@@ -64,47 +64,47 @@ Setup instructions:
 
 3. Backend Configuration
    1. insert this commands after the directory of Backend:
-```
-dotnet user-secrets set "Supabase:ServiceRoleKey" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuc3VjdWltb2l6a3NyYXdiY3dwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY2NjU4MSwiZXhwIjoyMDcxMjQyNTgxfQ.0dZtE7ueLqGX-jOI0vB2LtBeBtgZf1IAUVSBtekGpu8"
-
-dotnet user-secrets set "PORT" "5226"
-
-dotnet user-secrets set "JwtSettings:Secret" "any password you like"
-dotnet user-secrets set "JwtSettings:Issuer" "BizOpsAPI"
-dotnet user-secrets set "JwtSettings:Audience" "BizOpsAPIUsers"
-
-dotnet user-secrets set "EmailSettings:Username" "<PUT-YOUR-OWN-EMAIL-HERE>"
-dotnet user-secrets set "EmailSettings:SenderEmail" "<PUT-YOUR-OWN-EMAIL-HERE>"
-dotnet user-secrets set "EmailSettings:Password" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
-dotnet user-secrets set "EmailSettings:AppPassword" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
-
-dotnet user-secrets set "EmailIngestion:Username" "<PUT-YOUR-OWN-EMAIL-HERE>"
-dotnet user-secrets set "EmailIngestion:Password" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
-dotnet user-secrets set "EmailIngestion:AppPassword" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
-
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "User Id=postgres.dnsucuimoizksrawbcwp;Password=TunaiFlow123;Server=aws-1-ap-southeast-      1.pooler.supabase.com;Port=6543;Database=postgres"
-
-dotnet user-secrets set "ASPNETCORE_ENVIRONMENT" "Development"
-```
+   ```
+   dotnet user-secrets set "Supabase:ServiceRoleKey" "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuc3VjdWltb2l6a3NyYXdiY3dwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTY2NjU4MSwiZXhwIjoyMDcxMjQyNTgxfQ.0dZtE7ueLqGX-jOI0vB2LtBeBtgZf1IAUVSBtekGpu8"
+   
+   dotnet user-secrets set "PORT" "5226"
+   
+   dotnet user-secrets set "JwtSettings:Secret" "any password you like"
+   dotnet user-secrets set "JwtSettings:Issuer" "BizOpsAPI"
+   dotnet user-secrets set "JwtSettings:Audience" "BizOpsAPIUsers"
+   
+   dotnet user-secrets set "EmailSettings:Username" "<PUT-YOUR-OWN-EMAIL-HERE>"
+   dotnet user-secrets set "EmailSettings:SenderEmail" "<PUT-YOUR-OWN-EMAIL-HERE>"
+   dotnet user-secrets set "EmailSettings:Password" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
+   dotnet user-secrets set "EmailSettings:AppPassword" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
+   
+   dotnet user-secrets set "EmailIngestion:Username" "<PUT-YOUR-OWN-EMAIL-HERE>"
+   dotnet user-secrets set "EmailIngestion:Password" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
+   dotnet user-secrets set "EmailIngestion:AppPassword" "<PUT-YOUR-OWN-EMAIL-PASSWORD-HERE>"
+   
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "User Id=postgres.dnsucuimoizksrawbcwp;Password=TunaiFlow123;Server=aws-1-ap-southeast-      1.pooler.supabase.com;Port=6543;Database=postgres"
+   
+   dotnet user-secrets set "ASPNETCORE_ENVIRONMENT" "Development"
+   ```
    2. then, you can run it with:
-```
-dotnet run
-```
+   ```
+   dotnet run
+   ```
    3. then, go to [http://localhost:5226/swagger](http://localhost:5226/swagger) to access the swagger.
    
 5. Frontend Configuration
    1. Go into Frontend directory 
-```
-cd Frontend
-```
+   ```
+   cd Frontend
+   ```
    2. Build the optimized production build by running npm run build in the command terminal
-```
-npm run build
-```
+   ```
+   npm run build
+   ```
    3. Start the Next app by running npm run start in the command terminal
-```
-npm run start
-```
+   ```
+   npm run start
+   ```
    4. The next app will default to port 3000 on your machine. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 Reflections on Challenges and Learnings:
